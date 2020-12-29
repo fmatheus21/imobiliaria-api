@@ -52,6 +52,18 @@ public class ClientResource {
     public ResponseEntity<?> get(@PathVariable int id) {
         return clientRule.findById(id);
     }
+    
+    
+    @ApiOperation(value = "Register a new customer")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Record created"),
+        @ApiResponse(code = 403, message = "Access denied"),
+        @ApiResponse(code = 500, message = "Server error"),})
+  //  @PreAuthorize("hasAnyAuthority('ADMIN', 'GESTOR') and #oauth2.hasScope('write')")
+    @PostMapping
+    public ResponseEntity<?> post(@RequestBody @Valid ClientDto dto, HttpServletResponse response) {
+        return clientRule.create(dto, response);
+    }
 
     @ApiOperation(value = "Update client data by ID")
     @ApiResponses(value = {
@@ -65,16 +77,6 @@ public class ClientResource {
         return clientRule.update(id, clientDto, response);
     }
 
-    @ApiOperation(value = "Register a new customer")
-    @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Record created"),
-        @ApiResponse(code = 403, message = "Access denied"),
-        @ApiResponse(code = 500, message = "Server error"),})
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'GESTOR') and #oauth2.hasScope('write')")
-    @PostMapping
-    public ResponseEntity<?> post(@RequestBody @Valid ClientDto dto, HttpServletResponse response) {
-        return clientRule.create(dto, response);
-    }
 
     @ApiOperation(value = "Delete a client by ID")
     @ApiResponses(value = {

@@ -7,11 +7,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.firecode.app.controller.util.AppUtil;
 import com.firecode.app.controller.util.LocalDatetUtil;
 import com.firecode.app.model.entity.ClientEntity;
+import com.firecode.app.model.entity.AddressEntity;
 import com.firecode.app.model.entity.ContactEntity;
 import com.firecode.app.model.entity.StreetEntity;
 import com.firecode.app.model.entity.PersonEntity;
 import com.firecode.app.model.entity.PlanEntity;
-import com.firecode.app.model.entity.UserEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
@@ -20,10 +20,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 
-@JsonPropertyOrder({"id", "view", "delete", "created_at", "updated_at", "person", "address", "contact", "plan", "user"})
+@JsonPropertyOrder({"id", "view", "delete", "created_at", "updated_at", "person", "address", "contact", "plan"})
 @JsonInclude(Include.NON_NULL)
 @Api(tags = "Client", description = "API Client")
-public class ClientDto {
+public class ClientDto1 {
 
     @Getter
     @Setter
@@ -69,6 +69,13 @@ public class ClientDto {
 
     @Getter
     @Setter
+    @NotNull(message = "{address.not.null}")
+    @JsonProperty("address")
+    @ApiModelProperty(notes = "Customer address", name = "address", required = true)
+    private AddressDto addressDto;
+
+    @Getter
+    @Setter
     @NotNull(message = "{contact.not.null}")
     @JsonProperty("contact")
     @ApiModelProperty(notes = "Customer contact", name = "contact", required = true)
@@ -81,23 +88,21 @@ public class ClientDto {
     @ApiModelProperty(notes = "Customer plan", name = "plan", required = true)
     private PlanDto planDto;
 
-    @Getter
-    @Setter
-    @NotNull(message = "{user.not.null}")
-    @JsonProperty("user")
-    @ApiModelProperty(notes = "Customer user", name = "user", required = true)
-    private UserDto userDto;
-
-    public PersonEntity create(ClientDto dto) {
+    public PersonEntity create(ClientDto1 dto, StreetEntity street) {
 
         var person = new PersonEntity();
         var client = new ClientEntity();
+        var address = new AddressEntity();
         var contact = new ContactEntity();
-        var user = new UserEntity();
 
         person = PersonDto.converterEntity(dto.getPersonDto());
+        
+        contact.setEmail(dto.getContactDto().getEmail());
+        contact.setPhone(dto.getContactDto().getPhone());
+        contact.setIdPerson(person);
+        person.setContactEntity(contact);
 
-        client.setIdPerson(person);
+        /*client.setIdPerson(person);
         client.setIdPlan(new PlanEntity(dto.getPlanDto().getId()));
         client.setCreatedAt(LocalDatetUtil.currentDateTime());
         client.setUpdatedAt(LocalDatetUtil.currentDateTime());
@@ -105,34 +110,34 @@ public class ClientDto {
                 this.converterJson(
                         dto.getPersonDto().getName(),
                         dto.getPersonDto().getDocument(),
-                        "null",
-                        "null",
-                        "null",
-                        "null",
-                        "null"
+                        street.getDescriptionWithoutNumber(),
+                        street.getDescriptionDistrict(),
+                        street.getIdCity().getDescription(),
+                        street.getIdCity().getState(),
+                        street.getZipCode()
                 ));
         client.setIdPerson(person);
-        person.setClientEntity(client);
+        person.setClientEntity(client);*/
 
-        contact.setEmail(dto.getContactDto().getEmail());
-        contact.setPhone(dto.getContactDto().getPhone());
-        contact.setIdPerson(person);
-        person.setContactEntity(contact);
+       /* address.setComplement(dto.getAddressDto().getComplement());
+        address.setNumber(dto.getAddressDto().getNumber());
+        address.setIdStreet(street);
+        address.setIdPerson(person);
+        person.setAddressEntity(address);*/
+
         
-        dto.getUserDto().setIdUserStatus(4);
-        dto.getUserDto().setAvatar("teste.png");
-        user = UserDto.converterEntity(dto.getUserDto());
-        user.setIdPerson(person);
-        person.setUserEntity(user);
 
         return person;
     }
 
-    public PersonEntity update(PersonEntity person, ClientDto dto, StreetEntity street) {
+    public PersonEntity update(PersonEntity person, ClientDto1 dto, StreetEntity street) {
 
+        /*person.setName(dto.getPersonDto().getName());
+        person.setDocument(dto.getPersonDto().getDocument());
+        person.setIdPersonType(new PersonTypeEntity(dto.getPersonDto().getIdType()));*/
         person = PersonDto.converterEntity(dto.getPersonDto());
 
-        /*    person.getClientEntity().setCreatedAt(LocalDatetUtil.currentDateTime());
+        person.getClientEntity().setCreatedAt(LocalDatetUtil.currentDateTime());
         person.getClientEntity().setUpdatedAt(LocalDatetUtil.currentDateTime());
         person.getClientEntity().setFilter(
                 this.converterJson(
@@ -148,25 +153,26 @@ public class ClientDto {
         person.getAddressEntity().setIdPerson(person);
         person.getAddressEntity().setNumber(dto.getAddressDto().getNumber());
         person.getAddressEntity().setComplement(dto.getAddressDto().getComplement());
-        person.getAddressEntity().setIdStreet(street);*/
+        person.getAddressEntity().setIdStreet(street);
+
         return person;
     }
 
-    public static ClientDto converterObject(ClientEntity client) {
+    public static ClientDto1 converterObject(ClientEntity client) {
 
         if (client == null) {
             return null;
         }
 
-        var dto = new ClientDto();
+        var dto = new ClientDto1();
 
         dto.setId(client.getId());
         dto.setDelete("/api/clients/" + client.getId());
         dto.setView("/api/clients/" + client.getId());
         dto.setPersonDto(PersonDto.converterObject(client.getIdPerson()));
-        //dto.setAddressDto(AddressDto.converterObject(client.getIdPerson().getAddressEntity()));
+        dto.setAddressDto(AddressDto.converterObject(client.getIdPerson().getAddressEntity()));
         dto.setContactDto(ContactDto.converterObject(client.getIdPerson().getContactEntity()));
-        //dto.setPlanDto(PlanDto.converterObject(client.getIdPlan()));
+        dto.setPlanDto(PlanDto.converterObject(client.getIdPlan()));
         dto.setCreatedAt(client.getCreatedAt());
         dto.setUpdatedAt(client.getUpdatedAt());
 

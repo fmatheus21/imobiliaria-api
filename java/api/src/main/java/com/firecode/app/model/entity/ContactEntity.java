@@ -67,13 +67,13 @@ public class ContactEntity implements Serializable {
 
     public String getEmail() {
         if (email != null) {
-            return AppUtil.convertAllUppercaseCharacters(email);
+            return AppUtil.convertAllLowercaseCharacters(email);
         }
         return email;
     }
 
     public void setEmail(String email) {
-        this.email = AppUtil.convertAllLowercaseCharacters(email);
+        this.email = AppUtil.convertAllUppercaseCharacters(email);
     }
 
     public String getPhone() {

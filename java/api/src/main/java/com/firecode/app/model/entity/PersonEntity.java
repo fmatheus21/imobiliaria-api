@@ -2,7 +2,6 @@ package com.firecode.app.model.entity;
 
 import com.firecode.app.controller.util.AppUtil;
 import java.io.Serializable;
-import java.util.Collection;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,14 +11,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlTransient;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  *
@@ -65,8 +61,8 @@ public class PersonEntity implements Serializable {
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "idPerson")
     private ClientEntity clientEntity;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idPerson")
-    private Collection<UserEntity> userEntityCollection;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "idPerson")
+    private UserEntity userEntity;
 
     public PersonEntity() {
     }
@@ -134,14 +130,12 @@ public class PersonEntity implements Serializable {
         this.clientEntity = clientEntity;
     }
 
-    @XmlTransient
-    @JsonIgnore
-    public Collection<UserEntity> getUserEntityCollection() {
-        return userEntityCollection;
+    public UserEntity getUserEntity() {
+        return userEntity;
     }
 
-    public void setUserEntityCollection(Collection<UserEntity> userEntityCollection) {
-        this.userEntityCollection = userEntityCollection;
+    public void setUserEntity(UserEntity userEntity) {
+        this.userEntity = userEntity;
     }
 
     @Override

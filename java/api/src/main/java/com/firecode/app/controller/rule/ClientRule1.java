@@ -1,7 +1,6 @@
 package com.firecode.app.controller.rule;
 
-import com.firecode.app.controller.dto.ClientDto;
-
+import com.firecode.app.controller.dto.ClientDto1;
 import com.firecode.app.controller.event.ResourceEvent;
 import com.firecode.app.controller.handler.response.MessageResponse;
 import com.firecode.app.controller.util.AppUtil;
@@ -27,9 +26,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
-public class ClientRule {
+public class ClientRule1 {
 
-    private static final Logger log = LoggerFactory.getLogger(ClientRule.class);
+    private static final Logger log = LoggerFactory.getLogger(ClientRule1.class);
 
     @Autowired
     private MessageSource messageSource;
@@ -47,7 +46,7 @@ public class ClientRule {
     @Autowired
     private StreetService streetService;
 
-    public ResponseEntity<?> create(ClientDto dto, HttpServletResponse response) {
+    public ResponseEntity<?> create(ClientDto1 dto, HttpServletResponse response) {
 
         String document = AppUtil.removeSpecialCharacters(dto.getPersonDto().getDocument());
         PersonEntity person = personService.findByDocument(document);
@@ -58,20 +57,29 @@ public class ClientRule {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.messageResponse(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST, "message.error.documento.exist", null));
         }
 
-        var clientDto = new ClientDto();
-        person = clientDto.create(dto);
+        String zipCode = AppUtil.removeSpecialCharacters(dto.getAddressDto().getZipCode());
+        var street = streetService.findByZipCode(zipCode);
+
+        /* Se o cep nao for encofntrado */
+        if (street == null) {
+            log.error("Zip code not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.messageResponse(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND, "message.error.zipcode.not.found", null));
+        }
+
+        var clientDto = new ClientDto1();
+        person = clientDto.create(dto, street);
         personService.create(person);
         publisher.publishEvent(new ResourceEvent(this, response, person.getClientEntity().getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(this.messageResponse(HttpStatus.CREATED.value(), HttpStatus.CREATED, "message.success.create", null));
     }
 
-    public ResponseEntity<Page<ClientDto>> findAllPaginator(RepositoryFilter filter, Pageable pageable) {
-        Page<ClientDto> clients = clientService.findAllPaginator(filter, pageable).map(ClientDto::converterObject);
+    public ResponseEntity<Page<ClientDto1>> findAllPaginator(RepositoryFilter filter, Pageable pageable) {
+        Page<ClientDto1> clients = clientService.findAllPaginator(filter, pageable).map(ClientDto1::converterObject);
         return !clients.isEmpty() ? ResponseEntity.ok(clients) : ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     public ResponseEntity<?> findById(int id) {
-        ClientDto client = ClientDto.converterObject(clientService.findById(id));
+        ClientDto1 client = ClientDto1.converterObject(clientService.findById(id));
         return client != null ? ResponseEntity.ok(client) : ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.messageResponse(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND, "message.error.not.found", null));
     }
 
@@ -81,14 +89,14 @@ public class ClientRule {
         if (client == null) {
             throw this.responseStatusException(HttpStatus.NOT_FOUND, "message.error.not.found");
         }
-
+        
         personService.deleteById(client.getIdPerson().getId());
         return ResponseEntity.status(HttpStatus.OK).body(this.messageResponse(HttpStatus.OK.value(), HttpStatus.OK, "message.success.delete", null));
     }
 
-    public ResponseEntity<?> update(int id, ClientDto dto, HttpServletResponse response) {
+    public ResponseEntity<?> update(int id, ClientDto1 dto, HttpServletResponse response) {
 
-      /*  ClientEntity client = clientService.findById(id);
+        ClientEntity client = clientService.findById(id);
         if (client == null) {
             throw this.responseStatusException(HttpStatus.NOT_FOUND, "message.error.not.found");
         }
@@ -103,14 +111,12 @@ public class ClientRule {
             street = client.getIdPerson().getAddressEntity().getIdStreet();
         }
 
-        var clientDto = new ClientDto();
+        var clientDto = new ClientDto1();
         PersonEntity person = clientDto.update(client.getIdPerson(), dto, street);
         personService.create(person);
         publisher.publishEvent(new ResourceEvent(this, response, null));
         return ResponseEntity.status(HttpStatus.CREATED).body(this.messageResponse(HttpStatus.CREATED.value(), HttpStatus.CREATED, "message.success.update", null));
-*/
-      
-      return null;
+
     }
 
     private MessageResponse messageResponse(int statusCode, HttpStatus statusDescription, String messageProperties, String cause) {

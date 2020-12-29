@@ -64,12 +64,12 @@ public class UserEntity implements Serializable {
     private UserPermissionJoinEntity userPermissionJoinEntity;
 
     @JoinColumn(name = "id_person", referencedColumnName = "id", nullable = false)
-    @ManyToOne(optional = false)
+    @OneToOne(optional = false)
     private PersonEntity idPerson;
 
     @JoinColumn(name = "id_user_status", referencedColumnName = "id", nullable = false)
     @ManyToOne(optional = false)
-    private UserStatusEntity userStatusEntity;
+    private UserStatusEntity idUserStatus;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_permission_join", joinColumns = @JoinColumn(name = "id_user"),
@@ -134,12 +134,12 @@ public class UserEntity implements Serializable {
         this.idPerson = idPerson;
     }
 
-    public UserStatusEntity getUserStatusEntity() {
-        return userStatusEntity;
+    public UserStatusEntity getIdUserStatus() {
+        return idUserStatus;
     }
 
-    public void setUserStatusEntity(UserStatusEntity userStatusEntity) {
-        this.userStatusEntity = userStatusEntity;
+    public void setIdUserStatus(UserStatusEntity idUserStatus) {
+        this.idUserStatus = idUserStatus;
     }
 
     public List<PermissionEntity> getPermissions() {

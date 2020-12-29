@@ -42,7 +42,7 @@ public class UserStatusEntity implements Serializable {
     @Column(name = "name", nullable = false, length = 45)
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userStatusEntity")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idUserStatus")
     private Collection<UserEntity> userEntityCollection;
 
     public UserStatusEntity() {
